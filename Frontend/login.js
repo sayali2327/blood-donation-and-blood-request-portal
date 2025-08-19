@@ -1,26 +1,30 @@
-document.getElementById("loginForm").addEventListener("submit", async function (e) {
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  const loginData = {
+    email: document.getElementById("email").value,
+    password: document.getElementById("password").value,
+  };
 
   try {
-    const res = await fetch("http://localhost:5000/api/login", {   // 👈 important
+    const res = await fetch("http://localhost:5000/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify(loginData),
     });
 
     const data = await res.json();
 
-    if (res.ok) {
-      alert("✅ Login successful!");
-      window.location.href = "dashboard.html"; // redirect after login
+    if (res.status === 200) {
+      alert("✅ " + data.message);
+      localStorage.setItem("token", data.token);
+      window.location.href = "index.html";
     } else {
-      alert("❌ " + data.message);
+      alert("❌ " + (data.message || "Invalid login"));
     }
   } catch (err) {
+    console.error("❌ Error:", err);
     alert("⚠️ Could not connect to server");
-    console.error(err);
   }
 });
+
