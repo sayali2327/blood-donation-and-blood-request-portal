@@ -5,55 +5,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register - Blood Donation Portal</title>
   <link rel="stylesheet" href="register.css">
-  
-
 </head>
 <body>
 
   <div class="overlay"></div>
 
   <div class="register-box">
-    <h2>🩸 Join as a Lifesaver!</h2>
-    <p class="subtitle">"Your details today could save a life tomorrow"</p>
+    <h2>🩸 Join the Life Saver Community</h2>
+    <p class="subtitle">"Register as a donor and save lives"</p>
 
-    <form>
+    <!-- Registration Form -->
+    <form id="registerForm">
       <div class="input-group">
-        <input type="text" required>
+        <input type="text" id="fullName" required>
         <label>Full Name</label>
       </div>
 
       <div class="input-group">
-        <input type="email" required>
+        <input type="email" id="email" required>
         <label>Email</label>
       </div>
 
       <div class="input-group">
-        <input type="password" required>
+        <input type="password" id="password" required>
         <label>Password</label>
       </div>
 
       <div class="input-group">
-        <input type="text" required>
+        <input type="text" id="bloodGroup" required>
         <label>Blood Group</label>
       </div>
 
       <div class="input-group">
-        <input type="tel" required>
+        <input type="text" id="phoneNumber" required>
         <label>Phone Number</label>
       </div>
 
       <button type="submit">Register</button>
 
       <p class="login-text">
-        Already have an account? <a href="login.html">Login Here</a>
+        Already have an account? <a href="login.html">Login</a>
       </p>
     </form>
-
-    <div class="motivation">
-      💓 <strong>Every registration matters!</strong> Help us connect with those who need life-saving blood.
-    </div>
   </div>
-<script src="register.js"></script>
 
+  <script src="register.js"></script>
 </body>
 </html>
