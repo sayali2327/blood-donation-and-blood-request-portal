@@ -131,3 +131,11 @@ button:hover {
   from { opacity: 0; transform: translateY(-30px); }
   to { opacity: 1; transform: translateY(0); }
 }
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  background: url("images/Blood donation logo design in vector _ Premium Vector (1).jpg") no-repeat center center fixed;
+  background-size: cover; /* makes it fit screen */
+  font-family: Arial, sans-serif;
+}
