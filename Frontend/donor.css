@@ -1,0 +1,23 @@
+*{box-sizing:border-box} body{font-family:system-ui,Arial,sans-serif;margin:0;background:#f6f7fb;color:#222}
+header.container{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.container{max-width:1100px;margin:0 auto;padding:16px}
+.grid{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
+.card{background:#fff;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.05);padding:16px}
+h1,h2{margin:8px 0}
+.row{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0}
+label{display:flex;flex-direction:column;font-size:14px;gap:6px}
+input,select,button{padding:10px;border:1px solid #ddd;border-radius:8px}
+button{cursor:pointer}
+.list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.list li{border:1px solid #eee;border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center}
+.map{height:260px;border-radius:12px;margin:12px 0;border:1px solid #eee}
+/* availability toggle */
+.switch{position:relative;display:inline-block;width:54px;height:28px;margin-right:8px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;transition:.2s;border-radius:999px}
+.slider:before{position:absolute;content:"";height:22px;width:22px;left:3px;bottom:3px;background:white;transition:.2s;border-radius:999px}
+input:checked + .slider{background:#16a34a}
+input:checked + .slider:before{transform:translateX(26px)}
+.small{font-size:12px;color:#666}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#eef;border:1px solid #cde}

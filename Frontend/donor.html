@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Donor Panel</title>
+  <link rel="stylesheet" href="donor.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+  <header class="container">
+    <h1>🩸 Donor Panel</h1>
+    <div class="actions">
+      <label class="switch">
+        <input type="checkbox" id="availabilityToggle">
+        <span class="slider"></span>
+      </label>
+      <span id="availabilityText">Unavailable</span>
+    </div>
+  </header>
+
+  <main class="container grid">
+    <section class="card">
+      <h2>Your Profile</h2>
+      <form id="profileForm">
+        <div class="row">
+          <label>Name <input type="text" id="name"></label>
+          <label>Age <input type="number" id="age"></label>
+          <label>Gender
+            <select id="gender">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <label>Blood Group
+            <select id="bloodGroup">
+              <option>A+</option><option>A-</option>
+              <option>B+</option><option>B-</option>
+              <option>AB+</option><option>AB-</option>
+              <option>O+</option><option>O-</option>
+            </select>
+          </label>
+        </div>
+        <div class="row">
+          <label>Email <input type="email" id="email"></label>
+          <label>Phone <input type="tel" id="phone"></label>
+          <label>Last Donation <input type="date" id="lastDonationDate"></label>
+        </div>
+        <div class="row">
+          <button type="button" id="locateBtn">Use My Location</button>
+          <input type="text" id="lat" placeholder="Latitude" readonly>
+          <input type="text" id="lng" placeholder="Longitude" readonly>
+        </div>
+        <!-- ✅ Only one map container -->
+        <div id="map" style="height:400px; width:100%; margin-top:10px;"></div>
+
+        <button type="submit">Save Profile</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Matching Requests <small id="radiusLabel">(within 5 km)</small></h2>
+      <div class="row">
+        <label>Radius (km) <input type="number" id="radiusKm" value="5" min="1" max="50"></label>
+        <button id="refreshBtn">Refresh</button>
+      </div>
+      <ul id="requestsList" class="list"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Donation History</h2>
+      <ul id="historyList" class="list"></ul>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Initialize map
+    var map = L.map('map').setView([28.6139, 77.2090], 12); // Delhi default
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Add marker
+    var marker = L.marker([28.6139, 77.2090]).addTo(map)
+      .bindPopup('Donor Location')
+      .openPopup();
+
+    // On map click, update marker + lat/lng fields
+    map.on('click', function(e) {
+      var lat = e.latlng.lat;
+      var lng = e.latlng.lng;
+
+      marker.setLatLng([lat, lng])
+            .bindPopup("Selected Location: " + lat.toFixed(5) + ", " + lng.toFixed(5))
+            .openPopup();
+
+      document.getElementById("lat").value = lat.toFixed(5);
+      document.getElementById("lng").value = lng.toFixed(5);
+    });
+
+    // Button: Use My Location (via Geolocation API)
+    document.getElementById("locateBtn").addEventListener("click", function() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          var lat = position.coords.latitude;
+          var lng = position.coords.longitude;
+
+          map.setView([lat, lng], 14);
+          marker.setLatLng([lat, lng])
+                .bindPopup("My Location")
+                .openPopup();
+
+          document.getElementById("lat").value = lat.toFixed(5);
+          document.getElementById("lng").value = lng.toFixed(5);
+        });
+      } else {
+        alert("Geolocation not supported in this browser.");
+      }
+    });
+  </script>
+</body>
+</html>
