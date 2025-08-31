@@ -18,7 +18,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     if (res.status === 200) {
       alert("✅ " + data.message);
       localStorage.setItem("token", data.token);
-      window.location.href = "index.html";
+      window.location.href = "donor.html";
     } else {
       alert("❌ " + (data.message || "Invalid login"));
     }

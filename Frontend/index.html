@@ -5,59 +5,134 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blood Donation Portal - Home</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Reset & Base */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Poppins', sans-serif; background: #fefefe; color: #333; line-height: 1.6; }
+
+    /* Navbar */
+    .navbar {
+      position: sticky; top: 0; z-index: 1000;
+      display: flex; justify-content: space-between; align-items: center;
+      background: #C62828; padding: 1rem 2rem; color: #fff;
+    }
+    .navbar .logo { font-size: 1.5rem; font-weight: bold; }
+    .navbar ul { list-style: none; display: flex; gap: 1rem; }
+    .navbar a {
+      color: #fff; text-decoration: none; font-weight: 500; transition: 0.3s;
+    }
+    .navbar a:hover { text-decoration: underline; }
+
+    /* Hero Section */
+    .hero {
+      background: url('https://images.unsplash.com/photo-1582719478250-c89cae4dc85b') center/cover no-repeat;
+      height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+      color: #fff; text-align: center; position: relative;
+    }
+    .hero::after {
+      content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); z-index: 1;
+    }
+    .hero h1, .hero p { position: relative; z-index: 2; }
+    .hero h1 { font-size: 3rem; }
+    .hero .cta {
+      margin-top: 1rem; display: flex; gap: 1rem; position: relative; z-index: 2;
+    }
+    .hero .btn {
+      padding: 0.8rem 1.5rem; background: #FF5252; border: none; border-radius: 50px;
+      color: #fff; font-weight: bold; cursor: pointer; transition: 0.3s;
+    }
+    .hero .btn:hover { background: #e53935; }
+
+    /* Cards Section */
+    .cards {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem; padding: 3rem 2rem;
+    }
+    .card {
+      background: #fff; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-8px); box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    .card h2 { margin-bottom: 0.5rem; color: #C62828; }
+    .card p { margin-bottom: 1rem; }
+    .btn {
+      background: #C62828; padding: 0.6rem 1.2rem; color: #fff; border: none; border-radius: 50px;
+      cursor: pointer; text-decoration: none; font-weight: 600;
+    }
+    .btn:hover { background: #B71C1C; }
+
+    /* Motivation Section */
+    .motivation {
+      background: #FFEBEE; padding: 1rem; text-align: center; font-size: 1.2rem;
+      border-top: 2px solid #C62828; margin: 2rem 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.2rem; }
+      .navbar ul { flex-wrap: wrap; }
+    }
+  </style>
 </head>
 <body>
 
-  <div class="overlay"></div>
-
-  <!-- Navigation Bar -->
+  <!-- Navigation -->
   <nav class="navbar">
     <div class="logo">🩸 Lifesaver Portal</div>
     <ul>
       <li><a href="home.html">Home</a></li>
-      <li><a href="register.html">Donate Blood</a></li>
-      <li><a href="request.html">Request Blood</a></li>
+      <li><a href="login.html">Donate</a></li>
+      <li><a href="login.html">Request</a></li>
       <li><a href="find.html">Find Donors</a></li>
       <li><a href="stats.html">Statistics</a></li>
+      <li><a href="register.html">Register</a></li>
       <li><a href="login.html">Logout</a></li>
     </ul>
   </nav>
 
-  <!-- Main Content -->
-  <div class="container">
-    <h1>Welcome to the Blood Donation Portal</h1>
-    <p class="tagline">"Every drop you give is a life you save"</p>
+  <!-- Hero Section -->
+  <section class="hero">
+    <h1>Save Lives with Every Drop</h1>
+    <p>"Every drop you give is a life you save"</p>
+    <div class="cta">
+      <a href="donate.html" class="btn">Donate Now</a>
+      <a href="request.html" class="btn">Request Blood</a>
+    </div>
+  </section>
 
-    <div class="cards">
-      <div class="card">
-        <h2>Donate Blood</h2>
-        <p>Register your availability and help someone in need.</p>
-        <a href="donate.html" class="btn">Donate Now</a>
-      </div>
-
-      <div class="card">
-        <h2>Request Blood</h2>
-        <p>Submit a blood request for emergencies and urgent needs.</p>
-        <a href="request.html" class="btn">Request Now</a>
-      </div>
-
-      <div class="card">
-        <h2>Find Donors</h2>
-        <p>Search for compatible donors in your city or region.</p>
-        <a href="find.html" class="btn">Find Now</a>
-      </div>
-
-      <div class="card">
-        <h2>Statistics</h2>
-        <p>View donation trends, urgent needs, and availability.</p>
-        <a href="stats.html" class="btn">View Stats</a>
-      </div>
+  <!-- Cards -->
+  <section class="cards">
+    <div class="card">
+      <h2>Donate Blood</h2>
+      <p>Register your availability and help someone in need.</p>
+      <a href="donate.html" class="btn">Donate Now</a>
     </div>
 
-    <!-- Motivation -->
-    <div class="motivation">
-      💓 <strong>Remember:</strong> Just one donation can save up to 3 lives. Be a hero today.
+    <div class="card">
+      <h2>Request Blood</h2>
+      <p>Submit a blood request for emergencies and urgent needs.</p>
+      <a href="request.html" class="btn">Request Now</a>
     </div>
+
+    <div class="card">
+      <h2>Find Donors</h2>
+      <p>Search for compatible donors in your city or region.</p>
+      <a href="find.html" class="btn">Find Now</a>
+    </div>
+
+    <div class="card">
+      <h2>Statistics</h2>
+      <p>View donation trends, urgent needs, and availability.</p>
+      <a href="stats.html" class="btn">View Stats</a>
+    </div>
+  </section>
+
+  <!-- Motivation -->
+  <div class="motivation">
+    💓 <strong>Remember:</strong> Just one donation can save up to 3 lives. Be a hero today.
   </div>
 
 </body>
