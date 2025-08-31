@@ -42,6 +42,6 @@ This is a **Blood Donation and Blood Request Portal** designed to connect blood 
 ## ⚙️ Installation
 1. Clone the repository:
    ```bash
-   git clone <your-repo-link>
+   git clone <https://github.com/sayali2327/blood-donation-and-blood-request-portal>
 
 
