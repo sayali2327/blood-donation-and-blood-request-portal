@@ -1,173 +1,477 @@
-// ====== CONFIG (replace with your auth integration) ======
-const API_BASE = '/api/donor';
-// Put your real JWT from your login system here during integration:
-const JWT_TOKEN = localStorage.getItem('jwt_token') || ''; // e.g., 'eyJhbGciOi...'
+// Global state
+let isAvailable = true;
+let zoomLevel = 13;
+let userLocation = null;
 
-let map, donorMarker;
-function initMap() {
-  map = new google.maps.Map(document.getElementById('map'), {
-    center: { lat: 20.5937, lng: 78.9629 }, // India centroid
-    zoom: 5
-  });
-  donorMarker = new google.maps.Marker({ map, draggable: true });
-  donorMarker.addListener('dragend', (e) => {
-    document.getElementById('lat').value = e.latLng.lat().toFixed(6);
-    document.getElementById('lng').value = e.latLng.lng().toFixed(6);
-  });
-}
-window.initMap = initMap;
+// DOM elements
+let availabilitySwitch, mapGrid, zoomInBtn, zoomOutBtn, donorForm, mapLoading, locationText, coordinates;
 
-// ====== Helpers ======
-async function api(path, options={}) {
-  const res = await fetch(API_BASE + path, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + JWT_TOKEN,
-      ...(options.headers || {})
-    }
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
-}
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+    // Get DOM elements
+    availabilitySwitch = document.getElementById('availabilitySwitch');
+    mapGrid = document.getElementById('mapGrid');
+    zoomInBtn = document.getElementById('zoomIn');
+    zoomOutBtn = document.getElementById('zoomOut');
+    donorForm = document.getElementById('donorForm');
+    mapLoading = document.getElementById('mapLoading');
+    locationText = document.getElementById('locationText');
+    coordinates = document.getElementById('coordinates');
 
-function setAvailabilityUI(isAvailable) {
-  document.getElementById('availabilityToggle').checked = !!isAvailable;
-  document.getElementById('availabilityText').textContent = isAvailable ? 'Available' : 'Unavailable';
-}
-
-// ====== Load Profile ======
-async function loadProfile() {
-  try {
-    const me = await api('/me');
-    document.getElementById('name').value = me.name || '';
-    document.getElementById('age').value = me.age || '';
-    document.getElementById('gender').value = me.gender || 'other';
-    document.getElementById('bloodGroup').value = me.bloodGroup || 'O+';
-    document.getElementById('email').value = me.contact?.email || '';
-    document.getElementById('phone').value = me.contact?.phone || '';
-    document.getElementById('lastDonationDate').value = me.lastDonationDate ? me.lastDonationDate.substring(0,10) : '';
-    setAvailabilityUI(me.availability);
-
-    const [lng, lat] = me.location?.coordinates || [78.9629, 20.5937];
-    document.getElementById('lat').value = lat;
-    document.getElementById('lng').value = lng;
-    if (map && donorMarker) {
-      const pos = { lat: Number(lat), lng: Number(lng) };
-      map.setCenter(pos); map.setZoom(11);
-      donorMarker.setPosition(pos);
-    }
-  } catch (e) {
-    console.warn('Load profile failed (you need a valid JWT):', e.message);
-  }
-}
-
-// ====== Save Profile ======
-async function saveProfile(e) {
-  e.preventDefault();
-  const payload = {
-    name: document.getElementById('name').value,
-    age: Number(document.getElementById('age').value || 0),
-    gender: document.getElementById('gender').value,
-    bloodGroup: document.getElementById('bloodGroup').value,
-    contact: { email: document.getElementById('email').value, phone: document.getElementById('phone').value },
-    location: {
-      type: 'Point',
-      coordinates: [ Number(document.getElementById('lng').value), Number(document.getElementById('lat').value) ]
-    },
-    availability: document.getElementById('availabilityToggle').checked,
-    lastDonationDate: document.getElementById('lastDonationDate').value || null
-  };
-  await api('/profile', { method: 'PUT', body: JSON.stringify(payload) });
-  await loadMatches();
-  alert('Profile saved');
-}
-
-// ====== Locate ======
-function locateMe() {
-  if (!navigator.geolocation) return alert('Geolocation not supported');
-  navigator.geolocation.getCurrentPosition(pos => {
-    const lat = pos.coords.latitude.toFixed(6);
-    const lng = pos.coords.longitude.toFixed(6);
-    document.getElementById('lat').value = lat;
-    document.getElementById('lng').value = lng;
-    if (map && donorMarker) {
-      const position = { lat: Number(lat), lng: Number(lng) };
-      map.setCenter(position); map.setZoom(12);
-      donorMarker.setPosition(position);
-    }
-  }, err => alert('Failed to get location: ' + err.message));
-}
-
-// ====== Matching Requests ======
-async function loadMatches() {
-  const radiusKm = Number(document.getElementById('radiusKm').value || 5);
-  document.getElementById('radiusLabel').textContent = `(within ${radiusKm} km)`;
-  const data = await api(`/requests?radiusKm=${radiusKm}`);
-  const ul = document.getElementById('requestsList');
-  ul.innerHTML = '';
-  data.requests.forEach(r => {
-    const li = document.createElement('li');
-    li.innerHTML = `
-      <div>
-        <div><strong>${r.hospital || 'Hospital'}</strong> • <span class="badge">${r.urgency}</span></div>
-        <div class="small">${r.units} unit(s) • Blood: ${r.bloodGroup}</div>
-      </div>
-      <div>
-        <button data-act="accept" data-id="${r._id}">Accept</button>
-        <button data-act="reject" data-id="${r._id}">Reject</button>
-      </div>`;
-    ul.appendChild(li);
-  });
-}
-
-// ====== Accept/Reject ======
-async function handleListClick(e) {
-  const btn = e.target.closest('button');
-  if (!btn) return;
-  const id = btn.getAttribute('data-id');
-  const act = btn.getAttribute('data-act');
-  if (act === 'accept') {
-    await api(`/requests/${id}/accept`, { method: 'POST' });
-    await loadMatches();
-    await loadHistory();
-    alert('Accepted. We notified the recipient!');
-  } else if (act === 'reject') {
-    await api(`/requests/${id}/reject`, { method: 'POST' });
-    await loadMatches();
-  }
-}
-
-// ====== History ======
-async function loadHistory() {
-  const data = await api('/history');
-  const ul = document.getElementById('historyList');
-  ul.innerHTML = '';
-  data.history.forEach(h => {
-    const li = document.createElement('li');
-    li.innerHTML = `
-      <div>
-        <div><strong>${h.hospital || 'Hospital'}</strong> • <span class="badge">${h.status}</span></div>
-        <div class="small">Blood: ${h.bloodGroup} • ${new Date(h.createdAt).toLocaleString()}</div>
-      </div>`;
-    ul.appendChild(li);
-  });
-}
-
-// ====== Availability toggle ======
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('availabilityToggle').addEventListener('change', async (e) => {
-    setAvailabilityUI(e.target.checked);
-    await saveProfile(new Event('submit')); // quick persist
-  });
-
-  document.getElementById('profileForm').addEventListener('submit', saveProfile);
-  document.getElementById('locateBtn').addEventListener('click', locateMe);
-  document.getElementById('refreshBtn').addEventListener('click', () => loadMatches());
-  document.getElementById('requestsList').addEventListener('click', handleListClick);
-
-  loadProfile().then(() => {
-    loadMatches();
-    loadHistory();
-  });
+    // Initialize components
+    initializeAvailabilitySwitch();
+    initializeMapControls();
+    initializeForm();
+    initializeGeolocation();
+    initializeSmoothScrolling();
+    initializeCardHoverEffects();
+    initializeFormInputEffects();
+    initializePhoneNumberFormatting();
 });
+
+// Availability switch functionality
+function initializeAvailabilitySwitch() {
+    if (!availabilitySwitch) return;
+
+    availabilitySwitch.addEventListener('click', function() {
+        isAvailable = !isAvailable;
+        if (isAvailable) {
+            availabilitySwitch.classList.add('active');
+        } else {
+            availabilitySwitch.classList.remove('active');
+        }
+    });
+}
+
+// Map controls functionality
+function initializeMapControls() {
+    if (!mapGrid || !zoomInBtn || !zoomOutBtn) return;
+
+    updateMapGrid();
+
+    zoomInBtn.addEventListener('click', function() {
+        if (zoomLevel < 18) {
+            zoomLevel++;
+            updateMapGrid();
+            updateButtonStates();
+        }
+    });
+
+    zoomOutBtn.addEventListener('click', function() {
+        if (zoomLevel > 1) {
+            zoomLevel--;
+            updateMapGrid();
+            updateButtonStates();
+        }
+    });
+
+    updateButtonStates();
+}
+
+function updateMapGrid() {
+    if (!mapGrid) return;
+    const gridSize = 20 + zoomLevel * 2;
+    mapGrid.style.backgroundSize = `${gridSize}px ${gridSize}px`;
+}
+
+function updateButtonStates() {
+    if (!zoomInBtn || !zoomOutBtn) return;
+
+    zoomInBtn.disabled = zoomLevel >= 18;
+    zoomOutBtn.disabled = zoomLevel <= 1;
+}
+
+// Geolocation functionality
+function initializeGeolocation() {
+    if (!mapLoading) return;
+
+    mapLoading.classList.remove('hidden');
+    
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                userLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                updateLocationDisplay();
+                mapLoading.classList.add('hidden');
+            },
+            function(error) {
+                console.log('Geolocation error:', error);
+                // Use default location (San Francisco)
+                userLocation = { lat: 37.7749, lng: -122.4194 };
+                updateLocationDisplay();
+                mapLoading.classList.add('hidden');
+            }
+        );
+    } else {
+        userLocation = { lat: 37.7749, lng: -122.4194 };
+        updateLocationDisplay();
+        mapLoading.classList.add('hidden');
+    }
+}
+
+function updateLocationDisplay() {
+    if (!userLocation || !coordinates || !locationText) return;
+
+    const lat = userLocation.lat.toFixed(4);
+    const lng = userLocation.lng.toFixed(4);
+    coordinates.textContent = `${lat}, ${lng}`;
+    
+    // Update text based on whether it's the user's actual location or default
+    if (userLocation.lat === 37.7749 && userLocation.lng === -122.4194) {
+        locationText.textContent = 'Default Location';
+    } else {
+        locationText.textContent = 'Your Current Location';
+    }
+}
+
+// Form functionality
+function initializeForm() {
+    if (!donorForm) return;
+
+    donorForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Collect form data
+        const formData = {
+            fullName: document.getElementById('fullName').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            age: document.getElementById('age').value,
+            gender: document.querySelector('input[name="gender"]:checked')?.value,
+            bloodGroup: document.getElementById('bloodGroup').value,
+            address: document.getElementById('address').value,
+            isAvailable: isAvailable,
+            location: userLocation
+        };
+
+        // Validate form
+        if (!validateForm(formData)) {
+            return;
+        }
+
+        // Simulate form submission
+        submitForm(formData);
+    });
+}
+
+function validateForm(data) {
+    // Basic validation (browser will handle required fields)
+    if (!data.gender) {
+        showAlert('Please select a gender.');
+        return false;
+    }
+
+    if (!data.bloodGroup) {
+        showAlert('Please select your blood group.');
+        return false;
+    }
+
+    // Validate age range
+    const age = parseInt(data.age);
+    if (age < 18 || age > 65) {
+        showAlert('Age must be between 18 and 65 years.');
+        return false;
+    }
+
+    // Validate email format (basic)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(data.email)) {
+        showAlert('Please enter a valid email address.');
+        return false;
+    }
+
+    // Validate phone number (basic)
+    if (data.phone.length < 10) {
+        showAlert('Please enter a valid phone number.');
+        return false;
+    }
+
+    return true;
+}
+
+function submitForm(data) {
+    // Show loading state
+    const submitBtn = donorForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Submitting...';
+    submitBtn.disabled = true;
+
+    // Simulate API call
+    setTimeout(function() {
+        // Reset button
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+
+        // Show success message
+        showAlert('Thank you for registering as a blood donor! We will contact you soon with donation opportunities.', 'success');
+
+        // Log form data (in real app, this would be sent to server)
+        console.log('Form submitted:', data);
+
+        // Optionally reset form
+        // resetForm();
+    }, 2000);
+}
+
+function resetForm() {
+    if (!donorForm) return;
+    
+    donorForm.reset();
+    isAvailable = true;
+    if (availabilitySwitch) {
+        availabilitySwitch.classList.add('active');
+    }
+}
+
+function showAlert(message, type = 'error') {
+    // Simple alert for now - in a real app, you'd want a nicer modal/toast
+    if (type === 'success') {
+        alert('✓ ' + message);
+    } else {
+        alert('⚠ ' + message);
+    }
+}
+
+// Smooth scrolling for navigation links
+function initializeSmoothScrolling() {
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+}
+
+// Add hover effects to cards
+function initializeCardHoverEffects() {
+    document.querySelectorAll('.benefit-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+}
+
+// Phone number formatting
+function initializePhoneNumberFormatting() {
+    const phoneInput = document.getElementById('phone');
+    if (!phoneInput) return;
+
+    phoneInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        
+        // Remove leading 1 if present
+        if (value.startsWith('1') && value.length > 1) {
+            value = value.substring(1);
+        }
+        
+        // Format the number
+        if (value.length >= 6) {
+            value = `+1 (${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6, 10)}`;
+        } else if (value.length >= 3) {
+            value = `+1 (${value.slice(0, 3)}) ${value.slice(3)}`;
+        } else if (value.length > 0) {
+            value = `+1 (${value}`;
+        }
+        
+        e.target.value = value;
+    });
+
+    // Prevent non-numeric input (except backspace, delete, etc.)
+    phoneInput.addEventListener('keydown', function(e) {
+        // Allow: backspace, delete, tab, escape, enter
+        if ([8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
+            // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+            (e.keyCode === 65 && e.ctrlKey === true) ||
+            (e.keyCode === 67 && e.ctrlKey === true) ||
+            (e.keyCode === 86 && e.ctrlKey === true) ||
+            (e.keyCode === 88 && e.ctrlKey === true) ||
+            // Allow: home, end, left, right
+            (e.keyCode >= 35 && e.keyCode <= 39)) {
+            return;
+        }
+        // Ensure that it is a number and stop the keypress
+        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
+        }
+    });
+}
+
+// Add focus effects to form inputs
+function initializeFormInputEffects() {
+    document.querySelectorAll('.form-input, .form-select').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.style.borderColor = '#E53935';
+            this.style.boxShadow = '0 0 0 3px rgba(229, 57, 53, 0.1)';
+        });
+
+        input.addEventListener('blur', function() {
+            this.style.borderColor = '#d1d5db';
+            this.style.boxShadow = 'none';
+        });
+    });
+}
+
+// Utility functions
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Form validation helpers
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function isValidAge(age) {
+    const numAge = parseInt(age);
+    return !isNaN(numAge) && numAge >= 18 && numAge <= 65;
+}
+
+function isValidPhone(phone) {
+    // Remove all non-digit characters
+    const digitsOnly = phone.replace(/\D/g, '');
+    // Should have 10 or 11 digits (11 if includes country code)
+    return digitsOnly.length >= 10;
+}
+
+// Add real-time validation feedback (optional enhancement)
+function addRealTimeValidation() {
+    const emailInput = document.getElementById('email');
+    const ageInput = document.getElementById('age');
+    const phoneInput = document.getElementById('phone');
+
+    if (emailInput) {
+        emailInput.addEventListener('blur', debounce(function() {
+            validateEmailField(this);
+        }, 300));
+    }
+
+    if (ageInput) {
+        ageInput.addEventListener('blur', debounce(function() {
+            validateAgeField(this);
+        }, 300));
+    }
+
+    if (phoneInput) {
+        phoneInput.addEventListener('blur', debounce(function() {
+            validatePhoneField(this);
+        }, 300));
+    }
+}
+
+function validateEmailField(input) {
+    const isValid = isValidEmail(input.value);
+    updateFieldValidation(input, isValid, 'Please enter a valid email address');
+}
+
+function validateAgeField(input) {
+    const isValid = isValidAge(input.value);
+    updateFieldValidation(input, isValid, 'Age must be between 18 and 65 years');
+}
+
+function validatePhoneField(input) {
+    const isValid = isValidPhone(input.value);
+    updateFieldValidation(input, isValid, 'Please enter a valid phone number');
+}
+
+function updateFieldValidation(input, isValid, errorMessage) {
+    // Remove existing validation classes and messages
+    input.classList.remove('error', 'success');
+    const existingError = input.parentNode.querySelector('.error-message');
+    if (existingError) {
+        existingError.remove();
+    }
+
+    if (input.value.trim() === '') {
+        return; // Don't validate empty fields on blur
+    }
+
+    if (isValid) {
+        input.classList.add('success');
+        input.style.borderColor = '#10b981';
+    } else {
+        input.classList.add('error');
+        input.style.borderColor = '#ef4444';
+        
+        // Add error message
+        const errorElement = document.createElement('p');
+        errorElement.className = 'error-message';
+        errorElement.style.color = '#ef4444';
+        errorElement.style.fontSize = '0.875rem';
+        errorElement.style.marginTop = '0.25rem';
+        errorElement.textContent = errorMessage;
+        input.parentNode.appendChild(errorElement);
+    }
+}
+
+// Initialize real-time validation when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Uncomment to enable real-time validation
+    // addRealTimeValidation();
+});
+
+// Handle form reset
+function handleFormReset() {
+    const form = document.getElementById('donorForm');
+    if (!form) return;
+
+    // Reset form fields
+    form.reset();
+    
+    // Reset availability switch
+    isAvailable = true;
+    if (availabilitySwitch) {
+        availabilitySwitch.classList.add('active');
+    }
+    
+    // Remove any validation classes
+    document.querySelectorAll('.form-input, .form-select').forEach(input => {
+        input.classList.remove('error', 'success');
+        input.style.borderColor = '#d1d5db';
+        input.style.boxShadow = 'none';
+    });
+    
+    // Remove error messages
+    document.querySelectorAll('.error-message').forEach(error => {
+        error.remove();
+    });
+}
+
+// Export functions for potential external use
+window.BloodCareApp = {
+    resetForm: handleFormReset,
+    validateForm: validateForm,
+    updateLocation: updateLocationDisplay,
+    setAvailability: function(available) {
+        isAvailable = available;
+        if (availabilitySwitch) {
+            if (available) {
+                availabilitySwitch.classList.add('active');
+            } else {
+                availabilitySwitch.classList.remove('active');
+            }
+        }
+    }
+};
