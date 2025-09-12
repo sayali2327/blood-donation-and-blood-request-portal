@@ -7,6 +7,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="recipient.css">
+  <!-- Add inside <head> before your other styles/scripts -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body class="bg-gray-50">
       <nav>
@@ -118,7 +121,11 @@
                   </div>
                 </div>
               </div>
-
+<div class="form-group">
+  <label class="form-label block mb-1 font-medium" for="location">Location/Address *</label>
+  <input class="form-input w-full border rounded-lg px-3 py-2" id="location" type="text" placeholder="City, State" required>
+</div>
+<div id="map" style="height: 300px; border-radius: 12px; margin-top: 1rem;"></div>
               <!-- Additional Details -->
               <div class="space-y-4">
                 <h3 class="text-lg font-semibold">Additional Details</h3>
@@ -176,5 +183,6 @@
       }
     });
   </script>
+  <script src="Recipient.js"></script>
 </body>
 </html>
