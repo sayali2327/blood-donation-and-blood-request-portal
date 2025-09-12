@@ -1,33 +1,43 @@
-/* styles.css */
 
-/* Root variables for easy theming */
-:root {
-  --font-size: 14px;
-  --primary-red: #dc2626;
-  --primary-red-hover: #b91c1c;
-  --secondary-red: #fef2f2;
-  --text-gray-900: #111827;
-  --text-gray-600: #4b5563;
-  --text-gray-500: #6b7280;
-  --text-gray-400: #9ca3af;
-  --bg-gray-50: #f9fafb;
-  --bg-gray-100: #f3f4f6;
-  --border-gray-200: #e5e7eb;
-  --border-gray-300: #d1d5db;
-  --green-500: #10b981;
-  --green-600: #059669;
-  --blue-500: #3b82f6;
-  --blue-600: #2563eb;
-  --orange-500: #f97316;
-  --purple-500: #8b5cf6;
-  --yellow-500: #eab308;
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1),
-    0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
-    0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --radius: 0.375rem;
+
+nav {
+  background: #d32f2f;
+  color: #fff;
+  padding: 15px 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
+
+nav .logo {
+  display: flex;
+  align-items: center;
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+nav .logo::before {
+  content: "🩸"; /* Blood drop emoji instead of water drop */
+  margin-right: 8px;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+nav ul li a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+nav ul li a:hover {
+  color: #220101;
+}
+
 
 /* Global styles */
 html, body {

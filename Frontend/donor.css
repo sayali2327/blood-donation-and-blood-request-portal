@@ -17,63 +17,44 @@ body {
     margin: 0 auto;
     padding: 0 1rem;
 }
-
-/* Header styles */
-.header {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    width: 100%;
-    background: white;
-    border-bottom: 1px solid #e5e7eb;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+nav {
+  background: #d32f2f;
+  color: #fff;
+  padding: 15px 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.header-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 4rem;
+nav .logo {
+  display: flex;
+  align-items: center;
+  font-size: 1.4em;
+  font-weight: bold;
 }
 
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+nav .logo::before {
+  content: "🩸"; /* Blood drop emoji instead of water drop */
+  margin-right: 8px;
 }
 
-.logo-icon {
-    width: 2rem;
-    height: 2rem;
-    background: #E53935;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
 }
 
-.logo-text {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #111827;
+nav ul li a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
 }
 
-.nav {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
+nav ul li a:hover {
+  color: #220101;
 }
 
-.nav-link {
-    color: #6b7280;
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.nav-link:hover {
-    color: #E53935;
-}
 
 /* Button styles */
 .btn {
