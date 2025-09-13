@@ -54,7 +54,68 @@ nav ul li a {
 nav ul li a:hover {
   color: #220101;
 }
+/* Hero Section with Image */
+.hero-bg {
+  position: relative;
+  background: url('https://images.unsplash.com/photo-1504439468489-c8920d796a29?auto=format&fit=crop&w=1200&q=80') center center/cover no-repeat;
+  min-height: 350px;
+  border-radius: 0 0 2rem 2rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1;
+  border-radius: 0 0 2rem 2rem;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  color: #fff;
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 4rem 1rem 3rem 1rem;
+}
+
+.hero-content h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.hero-content p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.hero-btn {
+  background: #d32f2f;
+  color: #fff;
+  padding: 0.75rem 2rem;
+  border-radius: 999px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.08);
+  display: inline-block;
+}
+
+.hero-btn:hover {
+  background: #b71c1c;
+}
+
+@media (max-width: 700px) {
+  .hero-content h1 { font-size: 2rem; }
+  .hero-content { padding: 2.5rem 0.5rem 2rem 0.5rem; }
+}
 
 /* Button styles */
 .btn {

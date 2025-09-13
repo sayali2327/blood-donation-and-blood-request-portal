@@ -24,6 +24,42 @@ if (navigator.geolocation) {
   });
 }
 
+
+// ...existing code...
+
+// Add this function at the top or after marker variable
+function reverseGeocode(lat, lng) {
+  fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.address) {
+        let city = data.address.city || data.address.town || data.address.village || "";
+        let state = data.address.state || "";
+        let locationString = city && state ? `${city}, ${state}` : data.display_name;
+        const locationInput = document.getElementById("location");
+        if (locationInput) locationInput.value = locationString;
+      }
+    });
+}
+
+// ...existing code...
+
+// Try to get user's location on load
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(function(position) {
+    var lat = position.coords.latitude;
+    var lng = position.coords.longitude;
+    map.setView([lat, lng], 14);
+    marker = L.marker([lat, lng]).addTo(map)
+      .bindPopup("You are here!").openPopup();
+    if (document.getElementById("lat")) document.getElementById("lat").value = lat.toFixed(5);
+    if (document.getElementById("lng")) document.getElementById("lng").value = lng.toFixed(5);
+    // Auto-fill location field
+    reverseGeocode(lat, lng);
+  });
+}
+
+// ...existing code...
 // Optional: Button to locate user again
 var locateBtn = document.getElementById("locateBtn");
 if (locateBtn) {
