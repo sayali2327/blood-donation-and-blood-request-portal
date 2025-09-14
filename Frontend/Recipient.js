@@ -85,54 +85,46 @@ if (locateBtn) {
 }
 
 // Submit request
-var requestForm = document.getElementById("requestForm");
+// ...existing code...
+
+// Submit request
+var requestForm = document.getElementById("bloodRequestForm");
 if (requestForm) {
   requestForm.addEventListener("submit", async function(e) {
     e.preventDefault();
     const data = {
       patientName: document.getElementById("patientName")?.value,
-      bloodGroup: document.getElementById("bloodGroup")?.value,
-      units: document.getElementById("units")?.value,
-      hospital: document.getElementById("hospital")?.value,
+      bloodType: document.getElementById("bloodType")?.value,
+      unitsNeeded: document.getElementById("unitsNeeded")?.value,
       urgency: document.getElementById("urgency")?.value,
-      location: {
-        type: "Point",
-        coordinates: [
-          parseFloat(document.getElementById("lng")?.value),
-          parseFloat(document.getElementById("lat")?.value)
-        ]
-      }
+      hospital: document.getElementById("hospital")?.value,
+      location: document.getElementById("location")?.value,
+      lat: document.getElementById("lat")?.value,
+      lng: document.getElementById("lng")?.value,
+      contactName: document.getElementById("contactName")?.value,
+      contactPhone: document.getElementById("contactPhone")?.value,
+      reason: document.getElementById("reason")?.value,
+      additionalNotes: document.getElementById("additionalNotes")?.value
     };
 
-    const token = localStorage.getItem("jwt_token"); // must be set after login
+    try {
+      const response = await fetch("http://localhost:5000/api/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
 
-    const res = await fetch("/api/recipient/request", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-      body: JSON.stringify(data)
-    });
-
-    const result = await res.json();
-    alert(result.message);
-    loadMatchingDonors(); // refresh donors list
+      if (response.ok) {
+        alert("Blood request submitted successfully!");
+        requestForm.reset();
+      } else {
+        const error = await response.json();
+        alert("Submission failed: " + (error.error || "Please try again."));
+      }
+    } catch (error) {
+      alert("Error connecting to server.");
+    }
   });
 }
 
-// Load matching donors
-async function loadMatchingDonors() {
-  const token = localStorage.getItem("jwt_token");
-  const res = await fetch("/api/recipient/donors", {
-    headers: { "Authorization": "Bearer " + token }
-  });
-  const donors = await res.json();
-  const list = document.getElementById("donorsList");
-  if (list) {
-    list.innerHTML = "";
-    donors.forEach(d => {
-      const li = document.createElement("li");
-      li.textContent = `${d.fullName} (${d.bloodGroup}) - ${d.phoneNumber}`;
-      list.appendChild(li);
-    });
-  }
-}
-loadMatchingDonors();
+// ...existing code...

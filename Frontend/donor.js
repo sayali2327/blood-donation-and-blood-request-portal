@@ -1,3 +1,58 @@
+// Initialize the map (centered on India by default)
+var map = L.map('map').setView([20.5937, 78.9629], 5);
+
+// Add OpenStreetMap tiles
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '© OpenStreetMap'
+}).addTo(map);
+
+// Marker variable for later use
+var marker;
+
+// Try to get user's location on load
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(function(position) {
+    var lat = position.coords.latitude;
+    var lng = position.coords.longitude;
+    map.setView([lat, lng], 14);
+    marker = L.marker([lat, lng]).addTo(map)
+      .bindPopup("You are here!").openPopup();
+    if (document.getElementById("lat")) document.getElementById("lat").value = lat.toFixed(5);
+    if (document.getElementById("lng")) document.getElementById("lng").value = lng.toFixed(5);
+    // Optional: Reverse geocode to fill address (see below)
+    reverseGeocode(lat, lng);
+  });
+}
+// ...existing code...
+
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('donorForm');
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevents page reload
+            // You can collect form data here and send to backend or show a message
+            alert('Thank you for registering as a donor!');
+        });
+    }
+});
+
+// ...existing code...
+
+// Optional: Reverse geocode to auto-fill address
+function reverseGeocode(lat, lng) {
+  fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.address) {
+        let city = data.address.city || data.address.town || data.address.village || "";
+        let state = data.address.state || "";
+        let locationString = city && state ? `${city}, ${state}` : data.display_name;
+        const addressInput = document.getElementById("address");
+        if (addressInput) addressInput.value = locationString;
+      }
+    });
+}
 // Global state
 let isAvailable = true;
 let zoomLevel = 13;
@@ -475,3 +530,47 @@ window.BloodCareApp = {
         }
     }
 };
+// ...existing code...
+
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('donorForm');
+    if (form) {
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const data = {
+                fullName: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('number').value,
+                age: document.getElementById('age').value,
+                gender: document.querySelector('input[name="gender"]:checked')?.value,
+                bloodGroup: document.getElementById('bloodGroup').value,
+                address: document.getElementById('address').value,
+                lat: document.getElementById('lat').value,
+                lng: document.getElementById('lng').value,
+                available: document.getElementById('availabilitySwitch')?.classList.contains('active')
+            };
+
+            try {
+                const response = await fetch('http://localhost:5000/api/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert('Registration successful!');
+                    form.reset();
+                } else {
+                    const error = await response.json();
+                    alert('Registration failed: ' + (error.error || 'Please try again.'));
+                }
+            } catch (error) {
+                alert('Error connecting to server.');
+            }
+        });
+    }
+});
+
