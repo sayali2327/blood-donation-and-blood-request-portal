@@ -1,4 +1,5 @@
 // Initialize the map (centered on India by default)
+
 var map = L.map('map').setView([20.5937, 78.9629], 5);
 
 // Add OpenStreetMap tiles
@@ -533,44 +534,40 @@ window.BloodCareApp = {
 // ...existing code...
 
 document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('donorForm');
-    if (form) {
-        form.addEventListener('submit', async function (e) {
-            e.preventDefault();
+  const form = document.getElementById('donorForm');
+  if (form) {
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
 
-            const data = {
-                fullName: document.getElementById('fullName').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('number').value,
-                age: document.getElementById('age').value,
-                gender: document.querySelector('input[name="gender"]:checked')?.value,
-                bloodGroup: document.getElementById('bloodGroup').value,
-                address: document.getElementById('address').value,
-                lat: document.getElementById('lat').value,
-                lng: document.getElementById('lng').value,
-                available: document.getElementById('availabilitySwitch')?.classList.contains('active')
-            };
+      const data = {
+        fullName: document.getElementById('fullName').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('number').value, // Change input id to 'phone' in HTML later
+        age: document.getElementById('age').value,
+        gender: document.querySelector('input[name="gender"]:checked')?.value,
+        bloodGroup: document.getElementById('bloodGroup').value,
+        address: document.getElementById('address').value,
+        lat: parseFloat(document.getElementById('lat').value),
+        lng: parseFloat(document.getElementById('lng').value),
+      };
 
-            try {
-                const response = await fetch('http://localhost:5000/api/users', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-
-                if (response.ok) {
-                    alert('Registration successful!');
-                    form.reset();
-                } else {
-                    const error = await response.json();
-                    alert('Registration failed: ' + (error.error || 'Please try again.'));
-                }
-            } catch (error) {
-                alert('Error connecting to server.');
-            }
+      try {
+        const response = await fetch('http://localhost:5000/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
         });
-    }
-});
 
+        if (response.ok) {
+          alert('Donor registered successfully!');
+          form.reset();
+        } else {
+          const error = await response.json();
+          alert('Registration failed: ' + (error.error || 'Please try again.'));
+        }
+      } catch (error) {
+        alert('Error connecting to server.');
+      }
+    });
+  }
+});

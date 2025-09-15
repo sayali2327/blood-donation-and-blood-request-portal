@@ -6,10 +6,19 @@ const userSchema = new mongoose.Schema({
   phone: String,
   age: Number,
   gender: String,
-  bloodGroup: String,
+  bloodGroup: { type: String, required: true },
   address: String,
-  lat: Number,
-  lng: Number
+  location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number], // [lng, lat]
+      index: '2dsphere'
+    }
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

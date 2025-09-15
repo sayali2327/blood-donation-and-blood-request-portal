@@ -16,6 +16,8 @@
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "express-session": "^1.18.2",
-    "mongoose": "^8.18.1"
+    "mongoose": "^8.18.1",
+    "nodemailer": "^7.0.6",
+    "twilio": "^5.9.0"
   }
 }
