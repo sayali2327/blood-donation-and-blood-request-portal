@@ -1,0 +1,37 @@
+nav {
+  background: #d32f2f;
+  color: #fff;
+  padding: 15px 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+nav .logo {
+  display: flex;
+  align-items: center;
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+nav .logo::before {
+  content: "🩸"; /* Blood drop emoji instead of water drop */
+  margin-right: 8px;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+nav ul li a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+nav ul li a:hover {
+  color: #440202;
+}
